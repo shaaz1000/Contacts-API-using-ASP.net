@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using ContactsAPI.Data;
 using ContactsAPI.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 // For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -22,10 +23,9 @@ namespace ContactsAPI.Controllers
         }
         // GET: /<controller>/
         [HttpGet]
-        public IActionResult GetContacts()
+        public async Task<IActionResult> GetContacts()
         {
-            return Ok(dbContext.Contacts.ToList());
-            
+            return Ok(await dbContext.Contacts.ToListAsync());
         }
 
         [HttpPost]
@@ -45,6 +45,25 @@ namespace ContactsAPI.Controllers
             return Ok(contact);
 
 
+        }
+
+        [HttpPut]
+        [Route("{id}")]
+        public async Task<IActionResult> UpdateContact([FromRoute] Guid id, UpdateContactRequest updateContactRequest)
+        {
+           var isContactExist = await dbContext.Contacts.FindAsync(id);
+            if (isContactExist != null)
+            {
+                isContactExist.Name = updateContactRequest.Name != null ? updateContactRequest.Name : isContactExist.Name;
+                isContactExist.Phone = updateContactRequest.Phone;
+                isContactExist.Address = updateContactRequest.Address != null ? updateContactRequest.Address : isContactExist.Address;
+                isContactExist.Email = updateContactRequest.Email != null ? updateContactRequest.Email : isContactExist.Email;
+
+                await dbContext.SaveChangesAsync();
+                return Ok(isContactExist);
+            }
+
+            return NotFound();
         }
     }
 }
