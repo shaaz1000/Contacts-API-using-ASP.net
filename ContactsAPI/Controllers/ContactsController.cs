@@ -28,6 +28,22 @@ namespace ContactsAPI.Controllers
             return Ok(await dbContext.Contacts.ToListAsync());
         }
 
+        // Get Individual Contact
+        [HttpGet]
+        [Route("{id}")]
+        public async Task<IActionResult> GetContact([FromRoute] Guid id)
+        {
+            var isContactExist = await dbContext.Contacts.FindAsync(id);
+
+            if(isContactExist != null)
+            {
+                return Ok(isContactExist);
+            }
+
+            return NotFound();
+        }
+
+        // Add Contact
         [HttpPost]
         public async Task<IActionResult> AddContact(AddContactRequest addContactRequest)
         {
@@ -47,6 +63,7 @@ namespace ContactsAPI.Controllers
 
         }
 
+        // Update Contact 
         [HttpPut]
         [Route("{id}")]
         public async Task<IActionResult> UpdateContact([FromRoute] Guid id, UpdateContactRequest updateContactRequest)
@@ -60,6 +77,23 @@ namespace ContactsAPI.Controllers
                 isContactExist.Email = updateContactRequest.Email != null ? updateContactRequest.Email : isContactExist.Email;
 
                 await dbContext.SaveChangesAsync();
+                return Ok(isContactExist);
+            }
+
+            return NotFound();
+        }
+
+        // Delete Contact
+        [HttpDelete]
+        [Route("{id}")]
+        public async Task<IActionResult> DeleteContact([FromRoute] Guid id)
+        {
+            var isContactExist = await dbContext.Contacts.FindAsync(id);
+
+            if (isContactExist != null)
+            {
+                 dbContext.Remove(isContactExist);
+                 await dbContext.SaveChangesAsync();
                 return Ok(isContactExist);
             }
 
